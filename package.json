@@ -1,0 +1,29 @@
+{
+  "name": "@souzjfe/swax",
+  "version": "0.0.8",
+  "description": "CLI para integração entre Swagger e Axios",
+  "main": "dist/lib.js",
+  "bin": {
+    "swax": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "npx ts-node --transpile-only src/cli.ts",
+    "start": "node dist/cli.js",
+    "publish:stable": "npm run build && npm publish --access public"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "commander": "^8.0.0",
+    "fs-extra": "^11.2.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^14.0.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
