@@ -1,6 +1,6 @@
 {
   "name": "@souzjfe/swax",
-  "version": "0.0.28",
+  "version": "0.1.0",
   "description": "CLI para integração entre Swagger e Axios",
   "main": "dist/lib.js",
   "bin": {
