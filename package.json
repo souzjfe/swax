@@ -1,6 +1,6 @@
 {
   "name": "@souzjfe/swax",
-  "version": "0.0.8",
+  "version": "0.0.28",
   "description": "CLI para integração entre Swagger e Axios",
   "main": "dist/lib.js",
   "bin": {
@@ -15,6 +15,8 @@
   "dependencies": {
     "axios": "^0.21.1",
     "commander": "^8.0.0",
+    "fs": "^0.0.1-security",
+    "ts-node": "^9.1.1",
     "fs-extra": "^11.2.0"
   },
   "devDependencies": {
