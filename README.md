@@ -98,4 +98,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-For more information or inquiries, please contact [Your Name](mailto:your.email@example.com).
+For more information or inquiries, please contact [Jeferson](mailto:jefferson.souzal@nees.ufal.br)
