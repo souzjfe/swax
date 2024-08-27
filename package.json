@@ -43,8 +43,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "npx ts-node --transpile-only src/cli.ts",
-    "start": "node dist/cli.js",
-    "publish:stable": "npm run build && npm publish --access public"
+    "start": "node dist/cli.js"
   },
   "dependencies": {
     "axios": "^0.21.1",
