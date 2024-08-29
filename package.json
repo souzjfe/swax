@@ -26,7 +26,7 @@
     "swagger-codegen-cli",
     "typescript-typings"
   ],
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "CLI para integração entre Swagger e Axios",
   "main": "dist/lib.js",
   "bin": {
