@@ -77,10 +77,11 @@ export async function generateTypes(configPath: string) {
         return `\texport type ${capitalize(method)}Routes = ${routesString};`;
       })
       .join('\n\n');
-
+    const axiosBaseURL = `\texport type BaseURLTyped = "${baseURL}";`;
     const swaxTypesDefinition = `
 import "axios";
 declare module 'axios' {
+${axiosBaseURL}
 ${typeDefinitions}
 
   export interface AxiosInstance {
@@ -92,7 +93,9 @@ ${typeDefinitions}
     put<T = any, R = AxiosResponse<T>>(url: PutRoutes, data?: any, config?: AxiosRequestConfig): Promise<R>;
     patch<T = any, R = AxiosResponse<T>>(url: PatchRoutes, data?: any, config?: AxiosRequestConfig): Promise<R>;
   }
-
+  export interface AxiosRequestConfig {
+    baseURL?: BaseURLTyped;
+  }
 }
     `;
 
