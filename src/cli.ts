@@ -2,7 +2,15 @@
 import { Command } from 'commander';
 import { generateTypes } from './commands/generate';
 import { createConfigFile } from './commands/init';
+import { register } from 'ts-node';
 
+// Register ts-node to handle TypeScript files
+register({
+  transpileOnly: true, // Transpile only without type-checking for performance
+  compilerOptions: {
+    module: 'commonjs', // Ensure that modules are CommonJS
+  },
+});
 const program = new Command();
 
 program
