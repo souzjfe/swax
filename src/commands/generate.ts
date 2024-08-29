@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { capitalize } from '../utils/fileUtils';
 import { normalizePath } from '../utils/swaggerUtils';
+import { SwaxConfig } from '../types';
 
 export async function generateTypes(configPath: string) {
   try {
@@ -15,7 +16,7 @@ export async function generateTypes(configPath: string) {
     const configModule = await import(resolvedConfigPath);
     const config = configModule.default;
 
-    const { baseURL, jsonSchemaPath, outputTypesFilePath } = config;
+    const { baseURL, jsonSchemaPath, outputTypesPath, ignoredPaths }: SwaxConfig = config;
 
     let url = baseURL.endsWith('/')
       ? `${baseURL.slice(0, -1)}${jsonSchemaPath}`
@@ -47,6 +48,12 @@ export async function generateTypes(configPath: string) {
     Object.keys(paths).forEach((path) => {
       const methods = paths[path];
       const normalizedPath = normalizePath(path, baseURL);
+
+      // Verificar se o caminho está em ignoredPaths
+      if (!!ignoredPaths && ignoredPaths.some(ignoredPath => normalizedPath.startsWith(ignoredPath))) {
+        return; // Se o caminho for ignorado, pule para a próxima iteração
+      }
+
       Object.keys(methods).forEach((method) => {
         if (methodRoutes[method] !== undefined) {
           methodRoutes[method].push(normalizedPath);
@@ -61,7 +68,7 @@ export async function generateTypes(configPath: string) {
             if (route.match(/{[^}]+}/g)) {
               const dynamicRoute = "`" + route.replace(/{([^}]+)}/g, '${number | string}') + "`";
               const regularRoute = `'${route.replace(/{[^}]+}/g, '${}')}'`;
-              return `${dynamicRoute} | ${regularRoute}`
+              return `${dynamicRoute} | ${regularRoute}`;
             }
             return `"${route}"`;
           })
@@ -88,15 +95,16 @@ ${typeDefinitions}
 
 }
     `;
-    if (!outputTypesFilePath) {
+
+    if (!outputTypesPath) {
       fs.writeFileSync('./axios.d.ts', swaxTypesDefinition);
       console.log('TypeScript declaration types for routes have been generated at root directory');
     } else {
-      if (!fs.existsSync(outputTypesFilePath)) {
-        fs.mkdirSync(outputTypesFilePath, { recursive: true });
-        console.log(`Created directory at ${outputTypesFilePath}`);
+      if (!fs.existsSync(outputTypesPath)) {
+        fs.mkdirSync(outputTypesPath, { recursive: true });
+        console.log(`Created directory at ${outputTypesPath}`);
       }
-      const filePath = path.join(outputTypesFilePath, 'axios.d.ts');
+      const filePath = path.join(outputTypesPath, 'axios.d.ts');
       fs.writeFileSync(filePath, swaxTypesDefinition);
       console.log(`TypeScript declaration types for routes have been generated at ${filePath}`);
     } 

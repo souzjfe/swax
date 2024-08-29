@@ -21,4 +21,11 @@ export type SwaxConfig = {
    * @example "/path/to/output/types"
    */
   outputTypesPath?: string;
+
+  /**
+   * The paths to ignore when generating types. This can be used to exclude certain paths from the generated types if you need to create multiples axios.create().
+   * This field is optional.
+   * @example ["/path/after/base-url"]
+   */
+  ignoredPaths?: string[];
 };

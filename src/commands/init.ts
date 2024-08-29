@@ -9,8 +9,8 @@ import { SwaxConfig } from '@souzjfe/swax';
 export default {
   baseURL: 'https://petstore.swagger.io/v2',
   jsonSchemaPath: '/swagger.json',
-  outputTypesPath: '.',
-} satisfies SwaxConfig;
+  outputTypesPath: '@types/',
+} as SwaxConfig; // or satisfies SwaxConfig;
   `;
   fs.writeFileSync(configPath, configContent.trim());
   console.log(`Default configuration file created at ${configPath}`);
