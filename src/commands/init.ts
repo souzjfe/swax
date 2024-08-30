@@ -10,6 +10,7 @@ export default {
   baseURL: 'https://petstore.swagger.io/v2',
   jsonSchemaPath: '/swagger.json',
   outputTypesPath: '@types/',
+  ignoredPaths: ['/pets', '/store'],
 } as SwaxConfig; // or satisfies SwaxConfig;
   `;
   fs.writeFileSync(configPath, configContent.trim());
