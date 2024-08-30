@@ -16,7 +16,7 @@ export async function generateTypes(configPath: string) {
     const configModule = await import(resolvedConfigPath);
     const config = configModule.default;
 
-    const { baseURL, jsonSchemaPath, outputTypesPath, ignoredPaths }: SwaxConfig = config;
+    const { baseURL, jsonSchemaPath, outputTypesPath, ignoredPaths = [] }: SwaxConfig= config;
 
     let url = baseURL.endsWith('/')
       ? `${baseURL.slice(0, -1)}${jsonSchemaPath}`
@@ -35,7 +35,7 @@ export async function generateTypes(configPath: string) {
     const swaggerData = response.data;
     const paths = swaggerData.paths;
 
-    const methodRoutes: { [key: string]: string[] } = {
+    const methodRoutes: Record<string, string[]> = {
       get: [],
       post: [],
       put: [],
@@ -47,12 +47,14 @@ export async function generateTypes(configPath: string) {
 
     Object.keys(paths).forEach((path) => {
       const methods = paths[path];
-      const normalizedPath = normalizePath(path, baseURL);
+      let normalizedPath = normalizePath(path, baseURL);
 
-      // Verificar se o caminho está em ignoredPaths
-      if (!!ignoredPaths && ignoredPaths.some(ignoredPath => normalizedPath.startsWith(ignoredPath))) {
-        return; // Se o caminho for ignorado, pule para a próxima iteração
-      }
+      // Remover partes da rota que correspondem a qualquer string em ignoredPaths
+      ignoredPaths.forEach(ignoredPath => {
+        if (normalizedPath.startsWith(ignoredPath)) {
+          normalizedPath = normalizedPath.replace(ignoredPath, '');
+        }
+      });
 
       Object.keys(methods).forEach((method) => {
         if (methodRoutes[method] !== undefined) {
@@ -60,42 +62,35 @@ export async function generateTypes(configPath: string) {
         }
       });
     });
-
+    // Create TypeScript types for each method
     const typeDefinitions = Object.entries(methodRoutes)
       .map(([method, routes]) => {
-        const routesString = routes
-          .map(route => {
-            if (route.match(/{[^}]+}/g)) {
-              const dynamicRoute = "`" + route.replace(/{([^}]+)}/g, '${number | string}') + "`";
-              const regularRoute = `'${route.replace(/{[^}]+}/g, '${}')}'`;
-              return `${dynamicRoute} | ${regularRoute}`;
-            }
-            return `"${route}"`;
-          })
-          .join(' | ') || 'string';
+        const regularRoutes = [...routes.map(route => `"${route.replace(/{[^}]+}/g, '${}')}"`), "String"].join(' | ');
+        const dynamicRoutes = [...routes.map(route => `${"`" + route.replace(/{([^}]+)}/g, '${number}') + "`"}`), "String"].join(' | ');
 
-        return `\texport type ${capitalize(method)}Routes = ${routesString};`;
+        return [
+          `\texport type ${capitalize(method)}Routes = ${regularRoutes};`,
+          `\texport type ${capitalize(method)}DynamicRoutes = ${dynamicRoutes};`,
+        ].join('\n\n');
       })
       .join('\n\n');
-    const axiosBaseURL = `\texport type BaseURLTyped = "${baseURL}";`;
+
     const swaxTypesDefinition = `
 import "axios";
 declare module 'axios' {
-${axiosBaseURL}
+  import { AxiosRequestConfig, AxiosResponse } from 'axios';
 ${typeDefinitions}
 
   export interface AxiosInstance {
-    get<T = any, R = AxiosResponse<T>>(url: GetRoutes, config?: AxiosRequestConfig): Promise<R>;
-    delete<T = any, R = AxiosResponse<T>>(url: DeleteRoutes, config?: AxiosRequestConfig): Promise<R>;
-    head<T = any, R = AxiosResponse<T>>(url: HeadRoutes, config?: AxiosRequestConfig): Promise<R>;
-    options<T = any, R = AxiosResponse<T>>(url: OptionsRoutes, config?: AxiosRequestConfig): Promise<R>;
-    post<T = any, R = AxiosResponse<T>>(url: PostRoutes, data?: any, config?: AxiosRequestConfig): Promise<R>;
-    put<T = any, R = AxiosResponse<T>>(url: PutRoutes, data?: any, config?: AxiosRequestConfig): Promise<R>;
-    patch<T = any, R = AxiosResponse<T>>(url: PatchRoutes, data?: any, config?: AxiosRequestConfig): Promise<R>;
+    get<T = any, R = AxiosResponse<T>>(url: GetRoutes | GetDynamicRoutes, config?: AxiosRequestConfig): Promise<R>;
+    delete<T = any, R = AxiosResponse<T>>(url: DeleteRoutes | DeleteDynamicRoutes, config?: AxiosRequestConfig): Promise<R>;
+    head<T = any, R = AxiosResponse<T>>(url: HeadRoutes | HeadDynamicRoutes, config?: AxiosRequestConfig): Promise<R>;
+    options<T = any, R = AxiosResponse<T>>(url: OptionsRoutes | OptionsDynamicRoutes, config?: AxiosRequestConfig): Promise<R>;
+    post<T = any, R = AxiosResponse<T>>(url: PostRoutes | PostDynamicRoutes, data?: any, config?: AxiosRequestConfig): Promise<R>;
+    put<T = any, R = AxiosResponse<T>>(url: PutRoutes | PutDynamicRoutes, data?: any, config?: AxiosRequestConfig): Promise<R>;
+    patch<T = any, R = AxiosResponse<T>>(url: PatchRoutes | PatchDynamicRoutes, data?: any, config?: AxiosRequestConfig): Promise<R>;
   }
-  export interface AxiosRequestConfig {
-    baseURL?: BaseURLTyped;
-  }
+
 }
     `;
 

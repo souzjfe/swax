@@ -1,5 +1,6 @@
-import axios from 'axios';
 
 export * from './types';
 
-axios.create({baseURL: ''}).get('')
+const endpointWithStringId = <T extends String>(endpoint: T, ...ids: string[]) => {
+  return endpoint.replace(/{[^}]+}/g, ids.shift() as string);
+}

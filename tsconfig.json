@@ -11,6 +11,6 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "axios.d.ts"],
   "exclude": ["node_modules", "dist"]
 }
